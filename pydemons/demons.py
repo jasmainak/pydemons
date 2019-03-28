@@ -16,11 +16,11 @@ def imagepad(im, scale=2.):
     if scale <= 1.:
         return im, ((0, shape[0]), (0, shape[1]))
     new_shape = np.ceil(np.array(shape) * scale)
-    before = np.floor((new_shape - shape) // 2)
-    after = new_shape - shape - before
+    before = (np.floor((new_shape - shape) // 2)).astype(int)
+    after = (new_shape - shape - before).astype(int)
     pad_width = zip(before, after)
     lim = zip(before, before + shape)
-    return np.pad(im, pad_width, mode="constant"), lim
+    return np.pad(im, (before, after), mode="constant"), lim
 
 
 def _standard_grid(shape):
@@ -96,7 +96,7 @@ def expfield(vx, vy):
     p = 2. ** n
     vx /= p
     vy /= p
-    for _ in xrange(n):
+    for _ in range(n):
         vx, vy = compose(vx, vy, vx, vy)
     return vx, vy
 
@@ -233,7 +233,7 @@ def register(fixed, moving, symmetric=True, sigma_fluid=1., sigma_diffusion=1.,
     e = np.inf
     e_min = e
     energies = []
-    for k in xrange(niter):
+    for k in range(niter):
         # find demons force field update and then smooth
         ux_forw, uy_forw = findupdate(fixed, moving, vx, vy, sigma_i, sigma_x)
         if not symmetric:
@@ -265,7 +265,7 @@ def register(fixed, moving, symmetric=True, sigma_fluid=1., sigma_diffusion=1.,
             sy_min = sy
 
         # invoke callback
-        print "Iter %03i/%03i: energy=%g" % (k + 1, niter, e)
+        print("Iter %03i/%03i: energy=%g" % (k + 1, niter, e))
         if callback and k % 10 == 0:
             variables = locals()
             variables["fixed"] = orig_fixed
@@ -274,7 +274,7 @@ def register(fixed, moving, symmetric=True, sigma_fluid=1., sigma_diffusion=1.,
         # check convergence
         if k > 0 and abs(e - energies[max(0, k - 5)]) < \
            energies[0] * stop_criterion:
-            print "Converged!"
+            print("Converged!")
             break
 
     # apply optimal deformation to moving image
@@ -318,7 +318,7 @@ def demons(fixed, moving, nlevel=3, symmetric=True, sigma_fluid=1.,
     # multi-resolution loop in decreasing powers of 2
     shape = np.array(fixed.shape, dtype=np.float)
     scale = 1. / 2 ** (nlevel - 1)
-    for _ in xrange(nlevel):
+    for _ in range(nlevel):
         # downsample images and velocities
         fixed_ = imresize(fixed, scale)
         moving_ = imresize(moving, scale)
